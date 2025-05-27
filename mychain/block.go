@@ -16,6 +16,37 @@ type Block struct {
 	Hash      string // 이 블록의 해시
 }
 
+// generateBlock: 이전 블록과 새로운 데이터로 새 블록을 만든다
+func generateBlock(oldBlock Block, data string) (Block, error) {
+	var newBlock Block
+
+	newBlock.Index = oldBlock.Index + 1
+	newBlock.Timestamp = time.Now().String()
+	newBlock.Data = data
+	newBlock.PrevHash = oldBlock.Hash
+	newBlock.Hash = calculateHash(newBlock)
+
+	return newBlock, nil
+}
+
+// isValidChain: 슬라이스로 저장된 체인 전체 무결성을 검사
+func isValidChain(chain []Block) bool {
+	for i := 1; i < len(chain); i++ {
+		prev := chain[i-1]
+		curr := chain[i]
+
+		// 1) 이전 블록의 해시와 현재 블록의 PrevHash 일치 여부
+		if curr.PrevHash != prev.Hash {
+			return false
+		}
+		// 2) 현재 블록의 Hash가 재계산값과 일치하는지
+		if calculateHash(curr) != curr.Hash {
+			return false
+		}
+	}
+	return true
+}
+
 // calculateHash: 블록 내용을 합쳐 SHA-256 해시를 계산
 func calculateHash(b Block) string {
 	record := fmt.Sprintf("%d%s%s%s", b.Index, b.Timestamp, b.Data, b.PrevHash)
