@@ -1,3 +1,4 @@
+/*
 package main
 
 import (
@@ -19,3 +20,5 @@ func main() {
 	}
 	fmt.Println("Latest block number:", header.Number)
 }
+
+*/
