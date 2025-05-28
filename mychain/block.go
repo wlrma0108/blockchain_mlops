@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -55,8 +56,10 @@ func calculateHash(b Block) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+var Blockchain []Block
+
 func main() {
-	// 제네시스 블록 직접 만들기
+	// 1) 제네시스 블록 생성 및 체인에 추가
 	genesis := Block{
 		Index:     0,
 		Timestamp: time.Now().String(),
@@ -64,7 +67,30 @@ func main() {
 		PrevHash:  "",
 	}
 	genesis.Hash = calculateHash(genesis)
+	Blockchain = append(Blockchain, genesis)
 
 	fmt.Println("Genesis Block 생성:")
-	fmt.Printf("%+v\n", genesis)
+	fmt.Printf("%+v\n\n", genesis)
+
+	// 2) 새 블록 두 개 생성·추가
+	block1, err := generateBlock(Blockchain[len(Blockchain)-1], "First real block")
+	if err != nil {
+		log.Fatal(err)
+	}
+	Blockchain = append(Blockchain, block1)
+
+	block2, err := generateBlock(Blockchain[len(Blockchain)-1], "second real block")
+	if err != nil {
+		log.Fatal(err)
+	}
+	Blockchain = append(Blockchain, block2)
+
+	// 3) 전체 체인 출력
+	for _, blk := range Blockchain {
+		fmt.Printf("Index:%d Data:%q Hash:%s PrevHash:%s\n",
+			blk.Index, blk.Data, blk.Hash, blk.PrevHash)
+	}
+
+	// 4) 무결성 검사 결과 출력
+	fmt.Println("\nChain valid?", isValidChain(Blockchain))
 }
