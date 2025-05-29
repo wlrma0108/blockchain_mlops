@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net"
 	"time"
 )
 
@@ -21,6 +25,54 @@ type Block struct {
 	Data      string // 블록에 담을 데이터(여기서는 단순 문자열)
 	PrevHash  string // 이전 블록의 해시
 	Hash      string // 이 블록의 해시
+}
+
+// handleConnection: 새 연결에서 체인을 받거나 보냄
+func (node *Node) handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	// 1) 내 체인을 상대에게 전송
+	data, _ := json.Marshal(node.Blockchain)
+	conn.Write(data)
+	conn.Write([]byte("\n"))
+
+	// 2) 상대 체인 수신
+	reader := bufio.NewReader(conn)
+	theirChainJSON, err := reader.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		log.Println("Read error:", err)
+		return
+	}
+
+	var theirChain []Block
+	if err := json.Unmarshal(theirChainJSON, &theirChain); err != nil {
+		log.Println("Unmarshal error:", err)
+		return
+	}
+
+	// 3) 더 긴 체인으로 교체
+	if len(theirChain) > len(node.Blockchain) && isValidChain(theirChain) {
+		node.Blockchain = theirChain
+		log.Println("체인 업데이트: 새로운 길이", len(theirChain))
+	}
+}
+
+func (node *Node) StartServer() {
+	ln, err := net.Listen("tcp", node.Address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("P2P 서버 시작: %s\n", node.Address)
+
+	// 무한 루프: 새 연결이 오면 handleConnection 호출
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Println("Accept error:", err)
+			continue
+		}
+		go node.handleConnection(conn)
+	}
 }
 
 // generateBlock: 이전 블록과 새로운 데이터로 새 블록을 만든다
