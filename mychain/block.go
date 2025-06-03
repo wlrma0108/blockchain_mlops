@@ -18,6 +18,23 @@ type Node struct {
 	Peers      []string // 연결된 동료 노드 주소 목록
 }
 
+type Message struct {
+    Type  string // "NEW_BLOCK" or "CHAIN"
+    Block *Block
+    Chain []Block
+}
+
+msg := Message{Type: "NEW_BLOCK", Block: &newBlock}
+payload, _ := json.Marshal(msg)
+for _, peer := range node.Peers {
+    go func(addr string) {
+        conn, _ := net.Dial("tcp", addr)
+        defer conn.Close()
+        conn.Write(payload)
+        conn.Write([]byte("\n"))
+    }(peer)
+}
+
 // Block 구조체: 블록체인의 최소 단위
 type Block struct {
 	Index     int    // 블록 높이
