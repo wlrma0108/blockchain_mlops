@@ -123,7 +123,30 @@ func isValidChain(chain []Block) bool {
 	return true
 }
 
-// calculateHash: 블록 내용을 합쳐 SHA-256 해시를 계산
+func saveChain(chain []Block) error {
+    file, err := os.Create("chain.json")
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    encoder := json.NewEncoder(file)
+    return encoder.Encode(chain)
+}
+
+func loadChain() ([]Block, error) {
+    file, err := os.Open("chain.json")
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+    var chain []Block
+    decoder := json.NewDecoder(file)
+    if err := decoder.Decode(&chain); err != nil {
+        return nil, err
+    }
+    return chain, nil
+}
+
 func calculateHash(b Block) string {
 	record := fmt.Sprintf("%d%s%s%s", b.Index, b.Timestamp, b.Data, b.PrevHash)
 	h := sha256.New()
