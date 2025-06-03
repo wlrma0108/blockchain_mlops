@@ -135,6 +135,18 @@ var Blockchain []Block
 
 func main() {
 	// 1) 제네시스 블록 생성 및 체인에 추가
+	var mutex = &sync.Mutex{}
+
+	// 블록을 추가할 때
+	mutex.Lock()
+	Blockchain = append(Blockchain, newBlock)
+	mutex.Unlock()
+
+	// 연결 요청 처리에서 체인을 교체할 때
+	mutex.Lock()
+	Blockchain = theirChain
+	mutex.Unlock()
+
 	genesis := Block{
 		Index:     0,
 		Timestamp: time.Now().String(),
