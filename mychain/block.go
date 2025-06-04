@@ -15,7 +15,7 @@ import (
 type Node struct {
 	Address    string   // 내 리스닝 주소, 예: "localhost:3000"
 	Blockchain []Block  // 내 체인 복사본
-	Peers      []string // 연결된 동료 노드 주소 목록
+	Peers      []string 
 }
 
 type Message struct {
