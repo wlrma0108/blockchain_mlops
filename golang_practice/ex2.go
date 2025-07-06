@@ -34,3 +34,11 @@ func (l *LinkedList) DeleteValue(v int) bool {
 	}
 	return false
 }
+
+func (l *LinkedList) print() {
+	for curr := l.Head; curr != nil; curr.Next{
+		fmt.Printf("%d -> ", curr.Value)
+	}
+	fmt.Println("nil")
+}
+
