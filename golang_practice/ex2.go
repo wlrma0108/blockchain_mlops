@@ -42,3 +42,11 @@ func (l *LinkedList) print() {
 	fmt.Println("nil")
 }
 
+type Stack struct {
+	data []int
+}
+
+func (s *Stack) Push(v int) {
+	s.data = append(s.data, v)
+}
+
