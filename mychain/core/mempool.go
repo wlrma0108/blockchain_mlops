@@ -2,6 +2,17 @@ package core
 
 import "sync"
 
+
+func (mp *Mempool) Add(tx *Transaction, st *State) error {
+    mp.mu.Lock()
+    defer mp.mu.Unlock()
+    if _, ok := mp.txs[tx.ID]; ok { return errors.New("dup") }
+    if err := wallet.Verify(tx); err != nil { return err }
+    if !st.CanSpend(tx) { return errors.New("insufficient") }
+    mp.txs[tx.ID] = tx
+    return nil
+}
+
 // Mempool 는 아직 블록에 포함되지 않은 Tx 들을 보관
 type Mempool struct {
 	mu  sync.RWMutex
